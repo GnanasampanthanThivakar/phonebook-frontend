@@ -12,7 +12,7 @@ const AddPhoneForm = () => {
     setError('');
     setSuccess('');
     try {
-      const response = await axios.post('http://localhost:8080/api/add-phone', { name, phone });
+      const response = await axios.post('https://phonebook-backend-snowy.vercel.app/api/add-phone', { name, phone });
       setSuccess('Phone added successfully!');
       console.log(response.data);
     } catch (error) {
