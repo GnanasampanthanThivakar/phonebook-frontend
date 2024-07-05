@@ -9,7 +9,7 @@ const PhoneList = () => {
   useEffect(() => {
     const fetchPhoneNumbers = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/get-phone');
+        const response = await axios.get('/api/get-phone');
         setPhoneNumbers(response.data.data.phoneNumbers);
       } catch (error) {
         console.error('Error fetching phone numbers:', error);
