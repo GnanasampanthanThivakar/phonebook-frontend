@@ -1,24 +1,38 @@
-// phonebook-frontend/src/components/PhoneList.js
+// src/components/PhoneList.js
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getPhoneNumbers } from '../indexedDB';
 
 const PhoneList = () => {
   const [phoneNumbers, setPhoneNumbers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchPhoneNumbers = async () => {
       try {
-        const response = await axios.get('/api/get-phone');
-        setPhoneNumbers(response.data.data.phoneNumbers);
+        let response;
+        if (navigator.onLine) {
+          response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/get-phone`);
+          setPhoneNumbers(response.data.data.phoneNumbers);
+        } else {
+          response = await getPhoneNumbers();
+          setPhoneNumbers(response);
+        }
       } catch (error) {
         console.error('Error fetching phone numbers:', error);
-        // Handle error, e.g., show an error message
+        setError('Failed to fetch phone numbers.');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchPhoneNumbers();
-  }, []); // Empty dependency array means this effect runs once
+  }, []);
+
+  if (loading) return <p>Loading phone numbers...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div>
