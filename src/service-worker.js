@@ -1,38 +1,29 @@
-// service-worker.js
+/* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = "phonebook-cache-v1";
-const urlsToCache = ["/", "/index.html", "/offline.html"];
+// Ensure that Workbox is available
+import { precacheAndRoute } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
+import { StaleWhileRevalidate } from 'workbox-strategies';
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache);
-    })
-  );
+// Precache and route all assets based on the manifest
+precacheAndRoute(self.__WB_MANIFEST || []);
+
+// Install event listener
+self.addEventListener('install', (event) => {
+  console.log('Service worker installed');
+  self.skipWaiting(); // Activate the new service worker immediately
 });
 
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response;
-      }
-      return fetch(event.request).catch(() => caches.match("/offline.html"));
-    })
-  );
+// Activate event listener
+self.addEventListener('activate', (event) => {
+  console.log('Service worker activated');
+  self.clients.claim(); // Take control of all pages under this service worker's scope
 });
 
-self.addEventListener("activate", (event) => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames.map((cacheName) => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            return caches.delete(cacheName);
-          }
-        })
-      )
-    )
-  );
-});
+// Fetch event listener
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new StaleWhileRevalidate({
+    cacheName: 'images-cache',
+  })
+);
