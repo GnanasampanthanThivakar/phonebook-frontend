@@ -1,5 +1,3 @@
-// src/components/AddPhoneForm.js
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import { addPhoneNumber } from '../indexedDB';
@@ -16,10 +14,12 @@ const AddPhoneForm = () => {
     setError('');
     setSuccess('');
     setLoading(true);
+
     const newPhone = { name, phone, _id: Date.now().toString() };
+
     try {
       if (navigator.onLine) {
-        await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/add-phone`, { name, phone });
+        await axios.post('http://localhost:8080/api/add-phone', { name, phone });
       } else {
         await addPhoneNumber(newPhone);
       }

@@ -1,30 +1,22 @@
-// src/indexedDB.js
-import { openDB } from 'idb';
+import axios from 'axios';
 
-const DB_NAME = 'phoneBookDB';
-const STORE_NAME = 'phoneNumbers';
+export const syncData = async () => {
+  const phoneNumbers = await getPhoneNumbers();
 
-export const initDB = async () => {
-  return openDB(DB_NAME, 1, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: '_id' });
-      }
-    },
-  });
+  if (phoneNumbers.length > 0) {
+    try {
+      await axios.post('http://localhost:8080/api/sync', phoneNumbers);
+      await clearPhoneNumbers();
+    } catch (error) {
+      console.error('Error syncing data:', error);
+    }
+  }
 };
 
-export const addPhoneNumber = async (phoneNumber) => {
-  const db = await initDB();
-  return db.put(STORE_NAME, phoneNumber);
-};
+// Detect when the app is online
+window.addEventListener('online', syncData);
 
-export const getPhoneNumbers = async () => {
-  const db = await initDB();
-  return db.getAll(STORE_NAME);
-};
-
-export const deletePhoneNumber = async (id) => {
-  const db = await initDB();
-  return db.delete(STORE_NAME, id);
-};
+// Detect when the app is offline
+window.addEventListener('offline', () => {
+  console.log('App is offline. Data will be stored locally.');
+});
