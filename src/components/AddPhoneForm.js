@@ -1,62 +1,39 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { addPhoneNumber } from '../indexedDB';
 
 const AddPhoneForm = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-    setLoading(true);
-
-    const newPhone = { name, phone, _id: Date.now().toString() };
 
     try {
-      if (navigator.onLine) {
-        await axios.post('http://localhost:8080/api/add-phone', { name, phone });
-      } else {
-        await addPhoneNumber(newPhone);
-      }
-      setSuccess('Phone added successfully!');
+      const response = await axios.post('http://localhost:8080/api/add-phone', { name, phone });
+      console.log('Phone book entry added:', response.data);
+      // Optionally, reset form fields after successful submission
       setName('');
       setPhone('');
-    } catch (error) {
-      console.error('Error adding phone:', error);
-      setError('Failed to add phone. Please try again later.');
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error('Error adding phone book entry:', err);
+      setError(err.message);
     }
   };
 
   return (
     <div>
+      <h2>Add New Phone Book Entry</h2>
       <form onSubmit={handleSubmit}>
-        <input 
-          type="text" 
-          placeholder="Name" 
-          value={name} 
-          onChange={(e) => setName(e.target.value)} 
-          required 
-        />
-        <input 
-          type="text" 
-          placeholder="Phone Number" 
-          value={phone} 
-          onChange={(e) => setPhone(e.target.value)} 
-          required 
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? 'Adding...' : 'Add Phone Number'}
-        </button>
+        <label>Name:</label>
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+        <br />
+        <label>Phone Number:</label>
+        <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+        <br />
+        <button type="submit">Add Entry</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {success && <p style={{ color: 'green' }}>{success}</p>}
     </div>
   );
 };

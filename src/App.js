@@ -1,5 +1,3 @@
-// phonebook-frontend/src/App.js
-
 import React from 'react';
 import './App.css';
 import AddPhoneForm from './components/AddPhoneForm';
