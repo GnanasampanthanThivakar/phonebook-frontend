@@ -32,8 +32,6 @@ self.addEventListener('sync', (event) => {
   }
 });
 
-self.addEventListener('online', syncOfflineData);
-
 registerRoute(
   ({ request }) => request.destination === 'image',
   new StaleWhileRevalidate({
