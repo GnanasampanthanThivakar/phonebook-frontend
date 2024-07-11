@@ -10,6 +10,7 @@ export const syncOfflineData = async () => {
         name: phone.name,
         phone: phone.phone,
       });
+      console.log('Phone book entry synced:', phone);
     } catch (err) {
       console.error('Error syncing phone book entry:', err);
     }
