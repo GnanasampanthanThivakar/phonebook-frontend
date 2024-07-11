@@ -1,26 +1,39 @@
+// src/service-worker.js
 /* eslint-disable no-restricted-globals */
 
-// Ensure that Workbox is available
 import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
+import { syncOfflineData } from './sync';
 
-// Precache and route all assets based on the manifest
 precacheAndRoute(self.__WB_MANIFEST || []);
 
-// Install event listener
 self.addEventListener('install', (event) => {
   console.log('Service worker installed');
-  self.skipWaiting(); // Activate the new service worker immediately
+  self.skipWaiting();
 });
 
-// Activate event listener
 self.addEventListener('activate', (event) => {
   console.log('Service worker activated');
-  self.clients.claim(); // Take control of all pages under this service worker's scope
+  self.clients.claim();
 });
 
-// Fetch event listener
+self.addEventListener('fetch', (event) => {
+  if (event.request.url.includes('/api/add-phone')) {
+    event.respondWith(fetch(event.request).catch(() => {
+      return new Response(null, { status: 503 });
+    }));
+  }
+});
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-phonebook') {
+    event.waitUntil(syncOfflineData());
+  }
+});
+
+self.addEventListener('online', syncOfflineData);
+
 registerRoute(
   ({ request }) => request.destination === 'image',
   new StaleWhileRevalidate({

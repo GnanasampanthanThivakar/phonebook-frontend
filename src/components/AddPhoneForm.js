@@ -1,5 +1,7 @@
+// src/components/AddPhoneForm.js
 import React, { useState } from 'react';
 import axios from 'axios';
+import { addPhoneOffline } from '../indexedDB';
 
 const AddPhoneForm = () => {
   const [name, setName] = useState('');
@@ -9,15 +11,26 @@ const AddPhoneForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await axios.post('http://localhost:8080/api/add-phone', { name, phone });
-      console.log('Phone book entry added:', response.data);
-      // Optionally, reset form fields after successful submission
-      setName('');
-      setPhone('');
-    } catch (err) {
-      console.error('Error adding phone book entry:', err);
-      setError(err.message);
+    if (navigator.onLine) {
+      try {
+        const response = await axios.post('http://localhost:8080/api/add-phone', { name, phone });
+        console.log('Phone book entry added:', response.data);
+        setName('');
+        setPhone('');
+      } catch (err) {
+        console.error('Error adding phone book entry:', err);
+        setError(err.message);
+      }
+    } else {
+      try {
+        await addPhoneOffline(name, phone);
+        console.log('Phone book entry added offline');
+        setName('');
+        setPhone('');
+      } catch (err) {
+        console.error('Error adding phone book entry offline:', err);
+        setError(err.message);
+      }
     }
   };
 
